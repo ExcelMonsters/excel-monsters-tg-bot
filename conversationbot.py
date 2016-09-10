@@ -19,6 +19,7 @@ from telegram import (ReplyKeyboardMarkup)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler)
 
+import os
 import logging
 
 # Enable logging
@@ -26,6 +27,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+tg_token = os.environ['TG_TOKEN']
 
 GENDER, PHOTO, LOCATION, BIO = range(4)
 
@@ -116,7 +119,7 @@ def error(bot, update, error):
 
 def main():
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater("TOKEN")
+    updater = Updater(tg_token)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
