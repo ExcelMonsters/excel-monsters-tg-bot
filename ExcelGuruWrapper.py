@@ -58,11 +58,14 @@ def slash_progress(bot, update):
 # In[ ]:
 
 def slash_start(bot, update):
+    try:
+        bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')
+    except:
+        print('не смог отравить BQADAgADUQADcPUPAh6EVwjy6aIEAg')
     txt = update.message.text
     chat_id = update.message.chat_id
     user_name = update.message.from_user.first_name
     msgs,buttons = eg.slash_start(chat_id, txt, user_name)
-    bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')    send_reply(bot, chat_id, msgs, buttons)
     send_reply(bot, chat_id, msgs, buttons)
 
 # In[ ]:
@@ -173,8 +176,11 @@ def faq(bot, update,txt=-1,chat_id=-1):
     
     for i in range(len(docs2send)):
         #bot.sendMessage(chat_id=chat_id, text = words2send[i])
-        bot.sendDocument(chat_id=chat_id,document = docs2send[i],caption = words2send[i])
-    
+        try:
+            bot.sendDocument(chat_id=chat_id,document = docs2send[i],caption = words2send[i])
+        except:
+            print('не смог отравить {}'.format(docs2send[i]))
+
     if len(docs2send)>0: return(0)
     
     return(-1)
