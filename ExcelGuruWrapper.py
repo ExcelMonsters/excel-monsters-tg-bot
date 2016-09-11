@@ -8,6 +8,7 @@
 from sys import exc_info# для выдачи ошибок
 from time import strftime # для логгирования
 from os import environ # для TG_TOKEN
+from random import randint
 
 
 # In[ ]:
@@ -26,36 +27,6 @@ from ExcelGuruCore import *
 # In[ ]:
 
 eg = ExcelGuruCore()
-
-
-# ### Создаём дополнительные функции
-
-# Функция, которая разбивает превашающие лимит размера сообщения телеграма на блоки
-
-# In[ ]:
-
-def split_msg(txt):
-    if len(txt)<4095: return([txt])
-    
-    l = txt.split('\n')
-    for p in l:
-        if len(p)>4095:
-            return(-1) #impossible then
-        #may go into each p > 4095, change in loop there every last " " to "\n"
-        #for poems may split firstly by "\n\n", only then inside by "\n", "."," "
-    
-    s = 0
-    for i in range(1,len(l)):
-        t = "\n".join(l[:i])
-        if len(t)>4095:
-            s = i
-            break
-    s = s-1        
-    
-    resp = "\n".join(l[:s])
-    left = "\n".join(l[s:])
-    if len(left)<4096: return([resp,left])
-    else: return([rest]+split_msg(left))
 
 
 # ### Именно телеграм
@@ -91,8 +62,8 @@ def slash_start(bot, update):
     chat_id = update.message.chat_id
     user_name = update.message.from_user.first_name
     msgs,buttons = eg.slash_start(chat_id, txt, user_name)
+    bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')    send_reply(bot, chat_id, msgs, buttons)
     send_reply(bot, chat_id, msgs, buttons)
-
 
 # In[ ]:
 
@@ -103,27 +74,127 @@ def inside_idle(bot,update,txt=-1,chat_id=-1):
         chat_id = update.message.chat_id
     try:
         msgs,buttons = eg.process_txt(chat_id,txt)
+        
+        # отладка
         print('### got: '+txt)
         print('state: ' + eg.get_state(chat_id))
         print(msgs)
         print(buttons)
+
+        # если всё плохо
+        # если нет подходящего стейта
         if msgs == -1:
-            bot.sendMessage(chat_id=chat_id, text = "smth wrong with states")
+            bot.sendMessage(chat_id=chat_id, text = "Произошла внутренняя ошибка. Приношу свои извенения. Пройдите в интересующий пункт меню")
+            eg.slash_start(bot,update)
             return(0)
+        
+        if msgs[0] == eg.ku and len(msgs)==1:
+            resp = faq(bot, update,txt,chat_id)
+            if resp == 0: return(0)
+            else: pass
+        
         send_reply(bot, chat_id, msgs, buttons)
-        # for i in range(len(msgs)):
-        #     if i < len(buttons) and len(buttons[i]) > 0 and len(buttons[i][0]) > 0:
-        #         bot.sendMessage(chat_id=chat_id, text = msgs[i], reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
-        #     else:
-        #         bot.sendMessage(chat_id=chat_id, text = msgs[i])
     except:
-        bot.sendMessage(chat_id=chat_id, text = "Unexpected error:" + str(sys.exc_info()[0]))
+        print("Unexpected error:" + str(sys.exc_info()[0]))
+        bot.sendMessage(chat_id=chat_id, text = "Произошла внутренняя ошибка. Приношу свои извенения. Пройдите в интересующий пункт меню")
+        eg.slash_start(bot,update)
+        return(0)
 
 
 # In[ ]:
 
 def idle_main(bot, update):
     inside_idle(bot,update)
+
+
+# In[9]:
+
+def idle_doc(bot, update):
+    try:
+        doc = update.message.document
+    except:
+        print('Не смог получить файл')
+    try:
+        print(doc)
+    except:
+        print('Не смог напечатать файл')
+    
+    resp = ['Спасибо, обязательно ознакомлюсь','Ммм, документики','Это что за покемон?','А скан паспорта не пришлёшь?','Нажимай лучше на мои кнопки','Ладно, можешь хранить здесь свои файлы, не буду удалять','Ладно, можешь хранить здесь свои файлы, не буду удалять','Ладно, можешь хранить здесь свои файлы, не буду удалять']
+    r = randint(1,len(resp))
+    bot.sendMessage(chat_id = update.message.chat_id, text = resp[r-1])
+    
+    try:
+        bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')
+    except:
+        print('не смог отравить BQADAgADUQADcPUPAh6EVwjy6aIEAg')
+
+
+# In[10]:
+
+def slash_faq(bot, update):
+    chat_id = update.message.chat_id
+    bot.sendMessage(chat_id=chat_id, text = 'Ты всегда можешь просто отправить мне текстовое сообщение о том, что тебе интересно. На данный момент перечень доступных тем выглядит так:\n🔸 Полный перечень горячих клавиш Excel\n🔸 Фиксация ширины столбцов в сводных таблицах.\n\nТакже ты всегда можешь обратиться с вопросом в наше коммьюнити @ExcelGuruCommunity или к преподавателю @maxim_uvarov')
+
+
+# In[11]:
+
+def faq(bot, update,txt=-1,chat_id=-1):
+    if txt == -1:
+        txt = update.message.text
+    if chat_id == -1:
+        chat_id = update.message.chat_id
+    
+    if 'клавиши' in txt or 'горячие' in txt or 'hot' in txt or 'key' in txt or 'клавиши' in txt:
+        bot.sendMessage(chat_id=chat_id, text = 'Полный перечень горячих клавиш Excel')       
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADj6gxG3D1DwIrIbXFE6HmvOcGcQ0ABBfWYkGS7LQWwNUBAAEC', caption = 'Полный перечень горячих клавиш Excel, 1/6')
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADkKgxG3D1DwJLXq1rtpaciSkdcQ0ABLBgf1FysKmErdYBAAEC', caption = 'Полный перечень горячих клавиш Excel, 2/6')
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADkagxG3D1DwJPO1q63c9INKzWgQ0ABFiPBiIBfSn04WIAAgI', caption = 'Полный перечень горячих клавиш Excel, 3/6')
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADkqgxG3D1DwJZyA5B8BTVn5TigQ0ABGkv5MiplXQSUGYAAgI', caption = 'Полный перечень горячих клавиш Excel, 4/6')
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADk6gxG3D1DwIY6dL9yL_hQrLigQ0ABMQ4ku7Dc580P2UAAgI', caption = 'Полный перечень горячих клавиш Excel, 5/6')
+        bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADlKgxG3D1DwKEuEfYIMEgcYkCcQ0ABC2dCFX6S9Vv5doBAAEC', caption = 'Полный перечень горячих клавиш Excel, 6/6')
+        return(0)
+    
+    docs2send = []
+    words2send = []
+    
+    if ('сводн' in txt or 'pivot' in txt) and ('ширин' in txt or 'столб' in txt):
+        words2send.append('Фиксация ширины столбцов в сводных таблицах')            
+        docs2send.append('BQADAgADbAADcPUPApNUYKoC-IrCAg')
+    
+    if ('сводн' in txt or 'pivot' in txt) and ('вычислим' in txt or 'пол' in txt or 'формул' in txt):
+        words2send.append('Создание вычисляемых полей в сводных таблицах')
+        docs2send.append('BQADAgADawADcPUPAqMTguRU1oWjAg')
+    
+    if len(docs2send)==0 and ('сводн' in txt or 'pivot' in txt):
+        words2send.append('Фиксация ширины столбцов в сводных таблицах')
+        docs2send.append('BQADAgADbAADcPUPApNUYKoC-IrCAg')
+        words2send.append('Создание вычисляемых полей в сводных таблицах')
+        docs2send.append('BQADAgADawADcPUPAqMTguRU1oWjAg')
+    
+    for i in range(len(docs2send)):
+        #bot.sendMessage(chat_id=chat_id, text = words2send[i])
+        bot.sendDocument(chat_id=chat_id,document = docs2send[i],caption = words2send[i])
+    
+    if len(docs2send)>0: return(0)
+    
+    return(-1)
+
+
+# In[12]:
+
+def idle_pic(bot, update):
+    try:
+        photo = update.message.photo
+    except:
+        print('Не смог получить файл')
+    try:
+        print(photo[-1])
+    except:
+        print('Не смог напечатать файл')
+    
+    resp = ['Спасибо, обязательно посмотрю позже','Ммм, фоточки','Это что за покемон?','А скан паспорта не пришлёшь?','Нажимай лучше на мои кнопки','Ладно, можешь хранить здесь свои файлы, не буду удалять','Ладно, можешь хранить здесь свои файлы, не буду удалять','Ладно, можешь хранить здесь свои фотки, не буду удалять']
+    r = randint(1,len(resp))
+    bot.sendMessage(chat_id = update.message.chat_id, text = resp[r-1])
 
 
 # In[ ]:
@@ -141,9 +212,12 @@ def main():
     dp.add_handler(CommandHandler("help", slash_help),group=0)
     dp.add_handler(CommandHandler("about", slash_about),group=0)
     dp.add_handler(CommandHandler("progress", slash_progress),group=0)
+    dp.add_handler(CommandHandler("faq", slash_faq),group=0)
     
     # on noncommand message
     dp.add_handler(MessageHandler([Filters.text], idle_main))
+    dp.add_handler(MessageHandler([Filters.document], idle_doc))
+    dp.add_handler(MessageHandler([Filters.photo], idle_pic))
 
     # Start the Bot
     updater.start_polling()

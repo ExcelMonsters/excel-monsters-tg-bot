@@ -94,14 +94,7 @@ class ExcelGuruCore:
         progress = 100 * past / len(self.quizes)
         return(['{}%'.format(progress)])
             
-    def debug(self,t):
-        messages,reply_keyboard = t
-        for i in range(len(messages)):
-            print('Msg #'+str(i+1)+'/'+str(len(messages)))
-            print(messages[i])
-            for j in reply_keyboard[i]: print(j)
-            print('')
-    
+   
     # для запросов извне
     
     def process_txt(self,chat_id,txt=''):
@@ -191,7 +184,6 @@ class ExcelGuruCore:
                 return(quiz[0][num_answered+1],[quiz[1][num_answered+1]])
             
         # подсчёт статистики
-        print('we are counting stats')
         ans = self.quizes[0][2]
         resp = list(self.quiz_data_read(chat_id).answer)
         match = [ans[i]==resp[i] for i in range(len(ans))]
