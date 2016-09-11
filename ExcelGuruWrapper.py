@@ -61,9 +61,20 @@ def split_msg(txt):
 # ### Именно телеграм
 
 # In[ ]:
+def send_reply(bot, chat_id, msgs, buttons):
+    print(buttons)
+    for i in range(len(msgs)):
+        bot.sendMessage(chat_id=chat_id, text = msgs[i])
 
 def slash_help(bot, update):
-    inside_idle(bot,update,'help')
+    chat_id = update.message.chat_id
+    msgs,buttons = eg.slash_help(chat_id)
+    send_reply(bot, chat_id, msgs, buttons)
+
+def slash_about(bot, update):
+    chat_id = update.message.chat_id
+    msgs,buttons = eg.slash_about(chat_id)
+    send_reply(bot, chat_id, msgs, buttons)
 
 
 # In[ ]:
@@ -73,6 +84,7 @@ def slash_start(bot, update):
     chat_id = update.message.chat_id
     msgs,buttons = eg.slash_start(chat_id)
     print(buttons)
+    # send_reply(bot, chat_id, msgs, buttons)
     for i in range(len(msgs)):
         print(buttons[i])
         bot.sendMessage(chat_id=chat_id, text = msgs[i],reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
@@ -119,6 +131,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", slash_start),group=0)
     dp.add_handler(CommandHandler("help", slash_help),group=0)
+    dp.add_handler(CommandHandler("about", slash_about),group=0)
     
     # on noncommand message
     dp.add_handler(MessageHandler([Filters.text], idle_main))
