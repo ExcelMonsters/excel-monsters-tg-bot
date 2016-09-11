@@ -123,7 +123,7 @@ class ExcelGuruCore:
 
     def slash_progress(self,chat_id,txt = ''):
         progr = self.get_progress(chat_id)
-        msgs = texts['progress']
+        msgs = texts['progress'][:]
         msgs[0] = msgs[0] + progr[0]
         buttons = replies['progress']
         print(msgs)
