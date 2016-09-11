@@ -64,7 +64,6 @@ def split_msg(txt):
 def send_reply(bot, chat_id, msgs, buttons):
     print(buttons)
     for i in range(len(msgs)):
-        # bot.sendMessage(chat_id=chat_id, text = msgs[i])
         if i < len(buttons) and len(buttons[i]) > 0 and len(buttons[i][0]) > 0:
             bot.sendMessage(chat_id=chat_id, text = msgs[i], reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
         else:
@@ -92,11 +91,7 @@ def slash_start(bot, update):
     chat_id = update.message.chat_id
     user_name = update.message.from_user.first_name
     msgs,buttons = eg.slash_start(chat_id, txt, user_name)
-    print(buttons)
     send_reply(bot, chat_id, msgs, buttons)
-    # for i in range(len(msgs)):
-    #     print(buttons[i])
-    #     bot.sendMessage(chat_id=chat_id, text = msgs[i],reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
 
 
 # In[ ]:
