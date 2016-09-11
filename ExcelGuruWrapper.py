@@ -64,7 +64,11 @@ def split_msg(txt):
 def send_reply(bot, chat_id, msgs, buttons):
     print(buttons)
     for i in range(len(msgs)):
-        bot.sendMessage(chat_id=chat_id, text = msgs[i])
+        # bot.sendMessage(chat_id=chat_id, text = msgs[i])
+        if i < len(buttons) and len(buttons[i]) > 0 and len(buttons[i][0]) > 0:
+            bot.sendMessage(chat_id=chat_id, text = msgs[i], reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
+        else:
+            bot.sendMessage(chat_id=chat_id, text = msgs[i])
 
 def slash_help(bot, update):
     chat_id = update.message.chat_id
@@ -76,18 +80,23 @@ def slash_about(bot, update):
     msgs,buttons = eg.slash_about(chat_id)
     send_reply(bot, chat_id, msgs, buttons)
 
+def slash_progress(bot, update):
+    chat_id = update.message.chat_id
+    msgs,buttons = eg.slash_progress(chat_id)
+    send_reply(bot, chat_id, msgs, buttons)
 
 # In[ ]:
 
 def slash_start(bot, update):
     txt = update.message.text
     chat_id = update.message.chat_id
-    msgs,buttons = eg.slash_start(chat_id)
+    user_name = update.message.from_user.first_name
+    msgs,buttons = eg.slash_start(chat_id, txt, user_name)
     print(buttons)
-    # send_reply(bot, chat_id, msgs, buttons)
-    for i in range(len(msgs)):
-        print(buttons[i])
-        bot.sendMessage(chat_id=chat_id, text = msgs[i],reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
+    send_reply(bot, chat_id, msgs, buttons)
+    # for i in range(len(msgs)):
+    #     print(buttons[i])
+    #     bot.sendMessage(chat_id=chat_id, text = msgs[i],reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
 
 
 # In[ ]:
@@ -106,8 +115,12 @@ def inside_idle(bot,update,txt=-1,chat_id=-1):
         if msgs == -1:
             bot.sendMessage(chat_id=chat_id, text = "smth wrong with states")
             return(0)
-        for i in range(len(msgs)):
-            bot.sendMessage(chat_id=chat_id, text = msgs[i],reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
+        send_reply(bot, chat_id, msgs, buttons)
+        # for i in range(len(msgs)):
+        #     if i < len(buttons) and len(buttons[i]) > 0 and len(buttons[i][0]) > 0:
+        #         bot.sendMessage(chat_id=chat_id, text = msgs[i], reply_markup=ReplyKeyboardMarkup(buttons[i], one_time_keyboard=True))
+        #     else:
+        #         bot.sendMessage(chat_id=chat_id, text = msgs[i])
     except:
         bot.sendMessage(chat_id=chat_id, text = "Unexpected error:" + str(sys.exc_info()[0]))
 
@@ -132,6 +145,7 @@ def main():
     dp.add_handler(CommandHandler("start", slash_start),group=0)
     dp.add_handler(CommandHandler("help", slash_help),group=0)
     dp.add_handler(CommandHandler("about", slash_about),group=0)
+    dp.add_handler(CommandHandler("progress", slash_progress),group=0)
     
     # on noncommand message
     dp.add_handler(MessageHandler([Filters.text], idle_main))
