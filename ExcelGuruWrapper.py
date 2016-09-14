@@ -1,9 +1,8 @@
 
 # coding: utf-8
-
 # ### Библиотечки
 
-# In[ ]:
+# In[1]:
 
 from sys import exc_info# для выдачи ошибок
 from time import strftime # для логгирования
@@ -11,7 +10,7 @@ from os import environ # для TG_TOKEN
 from random import randint
 
 
-# In[ ]:
+# In[2]:
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler,RegexHandler # для работы бота в целом
 from telegram import ReplyKeyboardMarkup,ReplyKeyboardHide,ReplyMarkup # для инлайновой клавиатуры
@@ -19,19 +18,16 @@ from telegram import ReplyKeyboardMarkup,ReplyKeyboardHide,ReplyMarkup # для 
 
 # ### Грузим класс, выполняющий ядро бота
 
-# In[ ]:
+# In[3]:
 
 from ExcelGuruCore import *
-
-
-# In[ ]:
-
 eg = ExcelGuruCore()
 
 
 # ### Именно телеграм
 
-# In[ ]:
+# In[4]:
+
 def send_reply(bot, chat_id, msgs, buttons):
     print(buttons)
     for i in range(len(msgs)):
@@ -40,35 +36,43 @@ def send_reply(bot, chat_id, msgs, buttons):
         else:
             bot.sendMessage(chat_id=chat_id, text = msgs[i])
 
+
+# In[5]:
+
 def slash_help(bot, update):
     chat_id = update.message.chat_id
     msgs,buttons = eg.slash_help(chat_id)
     send_reply(bot, chat_id, msgs, buttons)
+
+
+# In[6]:
 
 def slash_about(bot, update):
     chat_id = update.message.chat_id
     msgs,buttons = eg.slash_about(chat_id)
     send_reply(bot, chat_id, msgs, buttons)
 
+
+# In[7]:
+
 def slash_progress(bot, update):
     chat_id = update.message.chat_id
     msgs,buttons = eg.slash_progress(chat_id)
     send_reply(bot, chat_id, msgs, buttons)
 
-# In[ ]:
+
+# In[8]:
 
 def slash_start(bot, update):
-    try:
-        bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')
-    except:
-        print('не смог отравить BQADAgADUQADcPUPAh6EVwjy6aIEAg')
     txt = update.message.text
     chat_id = update.message.chat_id
     user_name = update.message.from_user.first_name
     msgs,buttons = eg.slash_start(chat_id, txt, user_name)
+    bot.sendDocument(chat_id=update.message.chat_id,document = 'BQADAgADUQADcPUPAh6EVwjy6aIEAg')
     send_reply(bot, chat_id, msgs, buttons)
 
-# In[ ]:
+
+# In[9]:
 
 def inside_idle(bot,update,txt=-1,chat_id=-1):
     if txt == -1:
@@ -104,13 +108,14 @@ def inside_idle(bot,update,txt=-1,chat_id=-1):
         return(0)
 
 
-# In[ ]:
+# In[10]:
 
 def idle_main(bot, update):
+    print(update.message.from_user)
     inside_idle(bot,update)
 
 
-# In[9]:
+# In[11]:
 
 def idle_doc(bot, update):
     try:
@@ -132,22 +137,31 @@ def idle_doc(bot, update):
         print('не смог отравить BQADAgADUQADcPUPAh6EVwjy6aIEAg')
 
 
-# In[10]:
+# In[12]:
 
 def slash_faq(bot, update):
     chat_id = update.message.chat_id
-    bot.sendMessage(chat_id=chat_id, text = 'Ты всегда можешь просто отправить мне текстовое сообщение о том, что тебе интересно. На данный момент перечень доступных тем выглядит так:\n🔸 Полный перечень горячих клавиш Excel\n🔸 Фиксация ширины столбцов в сводных таблицах.\n\nТакже ты всегда можешь обратиться с вопросом в наше коммьюнити @ExcelGuruCommunity или к преподавателю @maxim_uvarov')
+    bot.sendMessage(chat_id=chat_id, text = 'Ты всегда можешь просто отправить мне текстовое сообщение о том, что тебе интересно. На данный момент перечень доступных тем выглядит так:\n🔸 Полный перечень горячих клавиш Excel\n🔸 Фиксация ширины столбцов в сводных таблицах.\n\nТакже ты всегда можешь обратиться с вопросом в наше коммьюнити, https://telegram.me/ExcelGuruCommunity, или прямо к преподавателю @maxim_uvarov')
 
 
-# In[11]:
+# In[13]:
+
+def slash_rating(bot, update):
+    chat_id = update.message.chat_id
+    bot.sendMessage(chat_id=chat_id, text = '*Здесь будет рейтинг по когортам прохождения*')
+
+
+# In[14]:
 
 def faq(bot, update,txt=-1,chat_id=-1):
     if txt == -1:
         txt = update.message.text
     if chat_id == -1:
         chat_id = update.message.chat_id
+        
+    txt = txt.lower()
     
-    if 'клавиши' in txt or 'горячие' in txt or 'hot' in txt or 'key' in txt or 'клавиши' in txt:
+    if 'клавиш' in txt or 'горячие' in txt or 'hot' in txt or 'key' in txt or 'клавиа' in txt:
         bot.sendMessage(chat_id=chat_id, text = 'Полный перечень горячих клавиш Excel')       
         bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADj6gxG3D1DwIrIbXFE6HmvOcGcQ0ABBfWYkGS7LQWwNUBAAEC', caption = 'Полный перечень горячих клавиш Excel, 1/6')
         bot.sendPhoto(chat_id=update.message.chat_id,photo = 'AgADAgADkKgxG3D1DwJLXq1rtpaciSkdcQ0ABLBgf1FysKmErdYBAAEC', caption = 'Полный перечень горячих клавиш Excel, 2/6')
@@ -176,17 +190,14 @@ def faq(bot, update,txt=-1,chat_id=-1):
     
     for i in range(len(docs2send)):
         #bot.sendMessage(chat_id=chat_id, text = words2send[i])
-        try:
-            bot.sendDocument(chat_id=chat_id,document = docs2send[i],caption = words2send[i])
-        except:
-            print('не смог отравить {}'.format(docs2send[i]))
-
+        bot.sendDocument(chat_id=chat_id,document = docs2send[i],caption = words2send[i])
+    
     if len(docs2send)>0: return(0)
     
     return(-1)
 
 
-# In[12]:
+# In[15]:
 
 def idle_pic(bot, update):
     try:
@@ -203,7 +214,6 @@ def idle_pic(bot, update):
     bot.sendMessage(chat_id = update.message.chat_id, text = resp[r-1])
 
 
-# In[ ]:
 tg_token = environ['TG_TOKEN']
 
 def main():
@@ -219,6 +229,7 @@ def main():
     dp.add_handler(CommandHandler("about", slash_about),group=0)
     dp.add_handler(CommandHandler("progress", slash_progress),group=0)
     dp.add_handler(CommandHandler("faq", slash_faq),group=0)
+    dp.add_handler(CommandHandler("rating", slash_rating),group=0)
     
     # on noncommand message
     dp.add_handler(MessageHandler([Filters.text], idle_main))
@@ -238,9 +249,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# In[ ]:
-
-
 
